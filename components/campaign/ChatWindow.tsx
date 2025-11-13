@@ -1233,6 +1233,14 @@ const ChatWindow: React.FC<ChatWindowProps> = ({
                   `}>
                     {msg.timestamp.toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit' })}
                   </span>
+                  <MessageExportMenu
+                    message={{
+                      type: msg.type,
+                      content: msg.content,
+                      timestamp: msg.timestamp,
+                      activities: msg.toolCalls?.map(tc => tc.function_name || 'Unknown') || undefined
+                    }}
+                  />
                 </div>
 
                 {/* Message Container */}

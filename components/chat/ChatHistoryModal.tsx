@@ -50,6 +50,17 @@ const ChatHistoryModal: React.FC<ChatHistoryModalProps> = ({ isOpen, onClose, on
     }
   }, [isOpen, onClose])
 
+  // Reset state when modal closes
+  useEffect(() => {
+    if (!isOpen) {
+      setSelectedAgentId(null)
+      setSearchQuery('')
+      setDateFilter('all')
+      setChatHistory([])
+      setFilteredHistory([])
+    }
+  }, [isOpen])
+
   // Load all chat history when agent is selected (no limit)
   useEffect(() => {
     if (isOpen && selectedAgentId) {
