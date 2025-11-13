@@ -5,6 +5,7 @@ import FileUpload, { FileAttachment } from '../chat/FileUpload'
 import { type UploadedFile, cleanupFileUrls } from '../../utils/fileUpload'
 import ToolResponseRenderer from '../chat/ToolResponseRenderer'
 import MessageExportMenu from '../chat/MessageExportMenu'
+import ExportMenu from '../chat/ExportMenu'
 
 // Helper function to count tokens (rough estimate: ~4 characters per token)
 const estimateTokens = (text: string): number => {
@@ -276,6 +277,7 @@ const ChatWindow: React.FC<ChatWindowProps> = ({
   const [showStatsModal, setShowStatsModal] = useState(false)
   const tdServiceRef = useRef<TDLLMService | null>(null)
   const messagesEndRef = useRef<HTMLDivElement>(null)
+  const messagesContainerRef = useRef<HTMLDivElement>(null)
   const menuRef = useRef<HTMLDivElement>(null)
 
   // Update messages when chatHistory prop changes
@@ -657,6 +659,19 @@ const ChatWindow: React.FC<ChatWindowProps> = ({
     } finally {
       setIsLoading(false)
     }
+  }
+
+  // Scroll to top of messages
+  const scrollToTop = () => {
+    messagesContainerRef.current?.scrollTo({
+      top: 0,
+      behavior: 'smooth'
+    })
+  }
+
+  // Scroll to bottom of messages
+  const scrollToBottom = () => {
+    messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' })
   }
 
   // Export chat as Markdown
@@ -1218,11 +1233,6 @@ const ChatWindow: React.FC<ChatWindowProps> = ({
                   `}>
                     {msg.timestamp.toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit' })}
                   </span>
-                  {msg.type === 'assistant' && !msg.isThinking && msg.content !== 'GREETING' && (
-                    <div css={css`margin-left: auto;`}>
-                      <MessageExportMenu message={msg} />
-                    </div>
-                  )}
                 </div>
 
                 {/* Message Container */}
@@ -1951,13 +1961,16 @@ const ChatWindow: React.FC<ChatWindowProps> = ({
 
       {/* Messages Area */}
       {messages.length > 0 && (
-        <div css={css`
+        <div
+          ref={messagesContainerRef}
+          css={css`
           display: flex;
           flex-direction: column;
           gap: 16px;
           max-height: 500px;
           overflow-y: auto;
           padding-right: 8px;
+          position: relative;
 
           /* Custom scrollbar */
           &::-webkit-scrollbar {
@@ -2127,6 +2140,108 @@ const ChatWindow: React.FC<ChatWindowProps> = ({
             </div>
           ))}
           <div ref={messagesEndRef} />
+
+          {/* Bottom Controls: Scroll & Export */}
+          <div css={css`
+            position: sticky;
+            bottom: 8px;
+            display: flex;
+            gap: 12px;
+            align-items: flex-end;
+            align-self: flex-end;
+            margin-top: -70px;
+            z-index: 10;
+          `}>
+            {/* Export Menu */}
+            <div css={css`
+              margin-bottom: 0;
+            `}>
+              <ExportMenu messages={messages} />
+            </div>
+
+            {/* Scroll Buttons Container */}
+            <div css={css`
+              display: flex;
+              flex-direction: column;
+              gap: 8px;
+            `}>
+            {/* Scroll to Top Button */}
+            <button
+              onClick={scrollToTop}
+              title="Scroll to top"
+              css={css`
+                display: flex;
+                align-items: center;
+                justify-content: center;
+                width: 36px;
+                height: 36px;
+                background: linear-gradient(135deg, #6F2EFF 0%, #1957DB 100%);
+                border: none;
+                border-radius: 50%;
+                cursor: pointer;
+                box-shadow: 0 2px 8px rgba(111, 46, 255, 0.3);
+                transition: all 0.2s;
+
+                &:hover {
+                  transform: translateY(-2px);
+                  box-shadow: 0 4px 12px rgba(111, 46, 255, 0.4);
+                }
+
+                &:active {
+                  transform: translateY(0);
+                }
+
+                svg {
+                  width: 16px;
+                  height: 16px;
+                  color: white;
+                }
+              `}
+            >
+              <svg width="16" height="16" viewBox="0 0 16 16" fill="none" xmlns="http://www.w3.org/2000/svg">
+                <path d="M8 12V4M8 4L4 8M8 4L12 8" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
+              </svg>
+            </button>
+
+            {/* Scroll to Bottom Button */}
+            <button
+              onClick={scrollToBottom}
+              title="Scroll to bottom"
+              css={css`
+                display: flex;
+                align-items: center;
+                justify-content: center;
+                width: 36px;
+                height: 36px;
+                background: linear-gradient(135deg, #6F2EFF 0%, #1957DB 100%);
+                border: none;
+                border-radius: 50%;
+                cursor: pointer;
+                box-shadow: 0 2px 8px rgba(111, 46, 255, 0.3);
+                transition: all 0.2s;
+
+                &:hover {
+                  transform: translateY(-2px);
+                  box-shadow: 0 4px 12px rgba(111, 46, 255, 0.4);
+                }
+
+                &:active {
+                  transform: translateY(0);
+                }
+
+                svg {
+                  width: 16px;
+                  height: 16px;
+                  color: white;
+                }
+              `}
+            >
+              <svg width="16" height="16" viewBox="0 0 16 16" fill="none" xmlns="http://www.w3.org/2000/svg">
+                <path d="M8 4V12M8 12L12 8M8 12L4 8" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
+              </svg>
+            </button>
+            </div>
+          </div>
         </div>
       )}
 
