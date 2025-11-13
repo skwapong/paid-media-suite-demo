@@ -2,7 +2,7 @@ import { useState } from 'react'
 import { useRouter } from 'next/router'
 import { css } from '@emotion/react'
 
-const PASSWORD = 'TreasureData2024!' // Must match middleware
+const PASSWORD = '!PMAgentSquad!' // Must match middleware
 
 export default function LoginPage() {
   const [password, setPassword] = useState('')

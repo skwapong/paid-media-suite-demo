@@ -1,7 +1,7 @@
 import { NextResponse } from 'next/server'
 import type { NextRequest } from 'next/server'
 
-const PASSWORD = 'TreasureData2024!' // Simple hardcoded password
+const PASSWORD = '!PMAgentSquad!' // Simple hardcoded password
 
 export function middleware(request: NextRequest) {
   // Skip auth for login page, API routes, and static files
