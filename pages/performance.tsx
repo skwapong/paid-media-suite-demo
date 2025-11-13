@@ -1,5 +1,3 @@
-'use client';
-
 import AppLayoutClient from '@/components/AppLayoutClient';
 import PerformanceDashboard from '@/components/dashboard/PerformanceDashboard';
 

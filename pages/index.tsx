@@ -1,7 +1,5 @@
-'use client';
-
 import AppLayoutClient from '@/components/AppLayoutClient';
-import HomePage from '@/components/home/HomePage';
+import HomePage from '@/components/home/HomePage.simple';
 
 export default function Home() {
   return (
