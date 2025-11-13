@@ -2,7 +2,7 @@
 
 import { css } from '@emotion/react';
 import { usePathname } from 'next/navigation';
-import { useState, useCallback, ReactNode } from 'react';
+import { useState, useCallback, ReactNode, isValidElement, cloneElement } from 'react';
 import LeftNavigation from './layout/LeftNavigation';
 import SecondaryNavigation from './layout/SecondaryNavigation';
 
@@ -17,6 +17,7 @@ export default function AppLayoutClient({ children }: AppLayoutClientProps) {
   const [isLeftNavExpanded, setIsLeftNavExpanded] = useState(false);
 
   const handleLoadChat = useCallback((chatId: string) => {
+    console.log('📋 AppLayoutClient: Loading chat:', chatId);
     setChatIdToLoad(chatId);
   }, []);
 
@@ -31,6 +32,15 @@ export default function AppLayoutClient({ children }: AppLayoutClientProps) {
 
   // Determine if we should show the secondary navigation
   const showSecondaryNav = pathname === '/campaign-hub';
+
+  // Clone children and inject props for campaign-hub
+  const childrenWithProps = showSecondaryNav && isValidElement(children)
+    ? cloneElement(children, {
+        chatIdToLoad,
+        onClearChat: handleNewConversation,
+        isLeftNavExpanded,
+      } as any)
+    : children;
 
   return (
     <div css={css`
@@ -62,7 +72,7 @@ export default function AppLayoutClient({ children }: AppLayoutClientProps) {
         flex-direction: column;
         overflow: auto;
       `}>
-        {children}
+        {childrenWithProps}
       </main>
     </div>
   );
