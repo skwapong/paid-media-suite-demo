@@ -1,4 +1,21 @@
 import type { NextApiRequest, NextApiResponse } from 'next';
+import { Readable } from 'stream';
+
+// Disable body parser - we'll handle it manually to support application/vnd.api+json
+export const config = {
+  api: {
+    bodyParser: false,
+  },
+};
+
+// Helper to read raw body from request
+async function getRawBody(readable: Readable): Promise<Buffer> {
+  const chunks: Buffer[] = [];
+  for await (const chunk of readable) {
+    chunks.push(typeof chunk === 'string' ? Buffer.from(chunk) : chunk);
+  }
+  return Buffer.concat(chunks);
+}
 
 export default async function handler(req: NextApiRequest, res: NextApiResponse) {
   // Handle CORS preflight
@@ -35,11 +52,31 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
   // Build the target URL - directly maps to /api/chats/{id}/continue
   const targetUrl = `${baseUrl}/api/chats/${id}/continue`;
 
+  // Manually parse the body since we disabled bodyParser
+  let requestBody = null;
+  try {
+    const rawBody = await getRawBody(req);
+    const bodyText = rawBody.toString('utf8');
+    requestBody = JSON.parse(bodyText);
+    console.log('✅ Successfully parsed request body for continue:', {
+      contentType: req.headers['content-type'],
+      bodyLength: bodyText.length,
+      hasInput: !!requestBody.input,
+      hasAttachments: !!requestBody.attachments
+    });
+  } catch (error) {
+    console.error('❌ Failed to parse request body:', error);
+    return res.status(400).json({
+      error: 'Invalid request body',
+      details: error instanceof Error ? error.message : 'Unknown error'
+    });
+  }
+
   console.log('🔍 Continue chat stream:', {
     method: req.method,
     chatId: id,
     targetUrl,
-    hasBody: !!req.body
+    hasBody: !!requestBody
   });
 
   try {
@@ -51,7 +88,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
         'Content-Type': 'application/vnd.api+json',
         'Accept': 'text/event-stream',
       },
-      body: JSON.stringify(req.body),
+      body: JSON.stringify(requestBody),
     });
 
     console.log('📡 API Response status:', response.status);

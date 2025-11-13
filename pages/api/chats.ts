@@ -1,13 +1,21 @@
 import type { NextApiRequest, NextApiResponse } from 'next';
+import { Readable } from 'stream';
 
-// Configure Next.js to parse JSON body
+// Disable body parser - we'll handle it manually to support application/vnd.api+json
 export const config = {
   api: {
-    bodyParser: {
-      sizeLimit: '1mb',
-    },
+    bodyParser: false,
   },
 };
+
+// Helper to read raw body from request
+async function getRawBody(readable: Readable): Promise<Buffer> {
+  const chunks: Buffer[] = [];
+  for await (const chunk of readable) {
+    chunks.push(typeof chunk === 'string' ? Buffer.from(chunk) : chunk);
+  }
+  return Buffer.concat(chunks);
+}
 
 export default async function handler(req: NextApiRequest, res: NextApiResponse) {
   // Handle CORS preflight
@@ -40,8 +48,26 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
     ? `${baseUrl}/api/chats?${queryString}`
     : `${baseUrl}/api/chats`;
 
-  // For POST, ensure we have a valid body object
-  let requestBody = req.method === 'POST' ? req.body : null;
+  // For POST, manually parse the body since we disabled bodyParser
+  let requestBody = null;
+  if (req.method === 'POST') {
+    try {
+      const rawBody = await getRawBody(req);
+      const bodyText = rawBody.toString('utf8');
+      requestBody = JSON.parse(bodyText);
+      console.log('✅ Successfully parsed request body:', {
+        contentType: req.headers['content-type'],
+        bodyLength: bodyText.length,
+        bodyKeys: Object.keys(requestBody)
+      });
+    } catch (error) {
+      console.error('❌ Failed to parse request body:', error);
+      return res.status(400).json({
+        error: 'Invalid request body',
+        details: error instanceof Error ? error.message : 'Unknown error'
+      });
+    }
+  }
 
   console.log('🔍 Request Debug:', {
     method: req.method,
