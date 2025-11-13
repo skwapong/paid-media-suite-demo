@@ -101,7 +101,7 @@ const LeftNavigation: React.FC<LeftNavigationProps> = ({ onExpandChange }) => {
           align-items: center;
           width: 100%;
         `}>
-          <NavIcon icon="settings" label="Agent Settings" isActive={false} onClick={() => setShowSettings(true)} isExpanded={isExpanded} />
+          <NavIcon icon="settings" label="Agent Settings" isActive={false} onClick={() => setShowSettings(true)} inactive isExpanded={isExpanded} />
           <NavIcon icon="profile" label="Profile" isActive={false} inactive isExpanded={isExpanded} />
         </div>
       </aside>
