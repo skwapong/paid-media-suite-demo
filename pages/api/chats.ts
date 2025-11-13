@@ -13,13 +13,13 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
   // Handle CORS preflight
   if (req.method === 'OPTIONS') {
     res.setHeader('Access-Control-Allow-Origin', '*');
-    res.setHeader('Access-Control-Allow-Methods', 'POST, OPTIONS');
+    res.setHeader('Access-Control-Allow-Methods', 'GET, POST, OPTIONS');
     res.setHeader('Access-Control-Allow-Headers', 'Content-Type, Authorization, Accept');
     return res.status(200).end();
   }
 
-  // Only allow POST
-  if (req.method !== 'POST') {
+  // Allow GET and POST
+  if (req.method !== 'GET' && req.method !== 'POST') {
     return res.status(405).json({ error: 'Method not allowed' });
   }
 
@@ -34,11 +34,14 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
   // Get base URL from environment or use default
   const baseUrl = process.env.TD_LLM_BASE_URL || 'https://llm-api-development.us01.treasuredata.com';
 
-  // Build the target URL - directly maps to /api/chats
-  const targetUrl = `${baseUrl}/api/chats`;
+  // For GET requests, include query parameters
+  const queryString = req.url?.split('?')[1] || '';
+  const targetUrl = queryString
+    ? `${baseUrl}/api/chats?${queryString}`
+    : `${baseUrl}/api/chats`;
 
-  // Next.js should automatically parse JSON body
-  const requestBody = req.body;
+  // For POST, ensure we have a valid body object
+  let requestBody = req.method === 'POST' ? req.body : null;
 
   console.log('🔍 Request Debug:', {
     method: req.method,
@@ -49,41 +52,51 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
     bodySample: requestBody ? JSON.stringify(requestBody).substring(0, 200) : 'null'
   });
 
-  // Ensure we have a body
-  if (!requestBody || typeof requestBody !== 'object') {
-    console.error('❌ Missing or invalid request body:', {
-      requestBody,
-      bodyType: typeof requestBody
-    });
-    return res.status(400).json({
-      error: 'Request body is required',
-      receivedBodyType: typeof requestBody,
-      hint: 'Ensure Content-Type is application/json or application/vnd.api+json'
-    });
+  // For POST requests, ensure we have a body
+  if (req.method === 'POST') {
+    if (!requestBody || typeof requestBody !== 'object') {
+      console.error('❌ Missing or invalid request body:', {
+        requestBody,
+        bodyType: typeof requestBody
+      });
+      return res.status(400).json({
+        error: 'Request body is required',
+        receivedBodyType: typeof requestBody,
+        hint: 'Ensure Content-Type is application/json or application/vnd.api+json'
+      });
+    }
   }
 
   try {
     console.log('📤 Forwarding to TD API:', {
+      method: req.method,
       targetUrl,
-      bodyKeys: Object.keys(requestBody)
+      bodyKeys: requestBody ? Object.keys(requestBody) : []
     });
 
-    // Forward the request to the target API
-    const response = await fetch(targetUrl, {
-      method: 'POST',
+    // Build fetch options based on method
+    const fetchOptions: RequestInit = {
+      method: req.method,
       headers: {
         'Authorization': `TD1 ${apiKey}`,
         'Content-Type': 'application/vnd.api+json',
         'Accept': 'application/vnd.api+json',
       },
-      body: JSON.stringify(requestBody),
-    });
+    };
+
+    // Only add body for POST requests
+    if (req.method === 'POST' && requestBody) {
+      fetchOptions.body = JSON.stringify(requestBody);
+    }
+
+    // Forward the request to the target API
+    const response = await fetch(targetUrl, fetchOptions);
 
     console.log('📡 TD API Response:', response.status);
 
     // Set CORS headers
     res.setHeader('Access-Control-Allow-Origin', '*');
-    res.setHeader('Access-Control-Allow-Methods', 'POST, OPTIONS');
+    res.setHeader('Access-Control-Allow-Methods', 'GET, POST, OPTIONS');
     res.setHeader('Access-Control-Allow-Headers', 'Content-Type, Authorization, Accept');
 
     // If API returned an error, get the error details
@@ -110,7 +123,11 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
 
     // Handle JSON response
     const data = await response.json();
-    console.log('✅ Chat session created:', data.data?.id);
+    if (req.method === 'POST') {
+      console.log('✅ Chat session created:', data.data?.id);
+    } else {
+      console.log('✅ Chat list retrieved:', data.data?.length, 'chats');
+    }
     return res.status(response.status).json(data);
   } catch (error) {
     console.error('💥 Proxy error:', error);
