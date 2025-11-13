@@ -292,7 +292,6 @@ const CampaignHub: React.FC<CampaignHubProps> = ({ chatIdToLoad, onClearChat, is
                 setMessage={setMessage}
                 chatHistory={chatHistory}
                 onChatHistoryChange={setChatHistory}
-                selectedAgentId={selectedAgentId}
                 isLeftNavExpanded={isLeftNavExpanded}
                 onBack={handleClearChat}
               />

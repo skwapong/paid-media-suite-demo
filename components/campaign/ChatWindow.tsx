@@ -254,7 +254,6 @@ interface ChatWindowProps {
   setMessage: (message: string) => void
   chatHistory?: Message[]
   onChatHistoryChange?: (messages: Message[]) => void
-  selectedAgentId?: string | null
   isLeftNavExpanded?: boolean
   onBack?: () => void  // Callback for back button
 }
@@ -264,7 +263,6 @@ const ChatWindow: React.FC<ChatWindowProps> = ({
   setMessage,
   chatHistory = [],
   onChatHistoryChange,
-  selectedAgentId,
   isLeftNavExpanded = false,
   onBack
 }) => {
@@ -286,33 +284,21 @@ const ChatWindow: React.FC<ChatWindowProps> = ({
     } else if (chatHistory.length === 0 && messages.length > 0) {
       // Chat was cleared, reset the session
       setMessages([])
-      if (selectedAgentId && tdServiceRef.current) {
+      if (tdServiceRef.current) {
         console.log('Resetting chat session for new conversation')
-        tdServiceRef.current = new TDLLMService({
-          orchestratorAgentId: selectedAgentId
-        })
+        tdServiceRef.current = new TDLLMService()
       }
     }
-  }, [chatHistory, messages.length, selectedAgentId])
+  }, [chatHistory, messages.length])
 
-  // Initialize TD service with selected agent only (no orchestrator fallback)
+  // Initialize TD service with hardcoded agent
   useEffect(() => {
-    if (selectedAgentId && !isInitialized) {
-      console.log('Initializing TD service with agent:', selectedAgentId)
-      tdServiceRef.current = new TDLLMService({
-        orchestratorAgentId: selectedAgentId
-      })
+    if (!isInitialized) {
+      console.log('Initializing TD service with hardcoded agent')
+      tdServiceRef.current = new TDLLMService()
       setIsInitialized(true)
     }
-
-    // Reinitialize if selectedAgentId changes
-    if (selectedAgentId && isInitialized && tdServiceRef.current) {
-      console.log('Switching to selected agent:', selectedAgentId)
-      tdServiceRef.current = new TDLLMService({
-        orchestratorAgentId: selectedAgentId
-      })
-    }
-  }, [selectedAgentId, isInitialized])
+  }, [isInitialized])
 
   // Auto-scroll to bottom when new messages arrive
   useEffect(() => {

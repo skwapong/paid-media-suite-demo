@@ -13,7 +13,6 @@ interface AgentResponse {
 interface TDLLMConfig {
   apiKey?: string
   baseUrl?: string
-  orchestratorAgentId?: string
 }
 
 interface FileAttachment {
@@ -23,6 +22,9 @@ interface FileAttachment {
   attachmentType: 'image' | 'document'  // Type of attachment
   inputFieldName?: string     // Optional input field name (for images)
 }
+
+// Hardcoded agent ID
+const AGENT_ID = '019a555a-2d62-7d98-89d7-0ec6dfcb0fdf'
 
 interface StreamEvent {
   content?: string
@@ -45,31 +47,26 @@ interface StreamEvent {
 class TDLLMService {
   private baseUrl: string
   private apiKey: string
-  private orchestratorAgentId: string
   private currentChatId: string | null = null
   private currentAbortController: AbortController | null = null
 
   constructor(config?: TDLLMConfig) {
     // In production: use Vercel serverless functions
-    // In development: use Vite proxy for CORS
+    // In development: use Next.js API routes
     const isProduction = process.env.NODE_ENV === "production"
 
     if (isProduction) {
       // Production: empty baseUrl means same-origin /api requests (Vercel functions)
       this.baseUrl = ''
-      console.log('🚀 Running in production mode - using Vercel serverless functions')
+      console.log('🚀 Running in production mode - using Next.js API routes')
     } else {
-      // Development: use Vite proxy (empty baseUrl triggers /api prefix)
+      // Development: use Next.js API routes (empty baseUrl triggers /api prefix)
       this.baseUrl = config?.baseUrl || process.env.NEXT_PUBLIC_TD_LLM_BASE_URL || ''
-      console.log('🔧 Running in development mode - using Vite proxy')
+      console.log('🔧 Running in development mode - using Next.js API routes')
     }
 
     this.apiKey = '' // Not needed client-side - handled by serverless functions
-    this.orchestratorAgentId = config?.orchestratorAgentId || ''
-
-    if (!this.orchestratorAgentId) {
-      console.warn('Missing orchestrator agent ID')
-    }
+    console.log('Using hardcoded agent ID:', AGENT_ID)
   }
 
   private buildHeaders(stream = false): Record<string, string> {
@@ -91,13 +88,13 @@ class TDLLMService {
         data: {
           type: 'chats',
           attributes: {
-            agentId: this.orchestratorAgentId
+            agentId: AGENT_ID
           }
         }
       }
 
       console.log('🔍 Creating chat session with payload:', {
-        agentId: this.orchestratorAgentId,
+        agentId: AGENT_ID,
         baseUrl: this.baseUrl,
         hasApiKey: !!this.apiKey,
         body: JSON.stringify(payload)
