@@ -6,6 +6,70 @@ A comprehensive guide to successfully integrating TD LLM Agents into your applic
 
 ----
 
+h2. ⚡ Quick Start - Download & Use
+
+{panel:title=🎁 Ready-to-Use Starter Template Available!|borderStyle=solid|borderColor=#28a745|titleBGColor=#28a745|bgColor=#d4edda}
+Skip the setup and start coding immediately with our complete working template.
+{panel}
+
+h3. Option 1: Clone the Repository (Fastest)
+
+{code:language=bash}
+# Clone the complete working template
+git clone https://github.com/skwapong/paid-media-suite-demo.git my-td-agent-app
+cd my-td-agent-app
+
+# Install dependencies
+npm install
+
+# Configure credentials
+cp .env.example .env
+# Edit .env with your TD_API_KEY and TD_LLM_BASE_URL
+
+# Update agent ID in services/tdLlmService.ts
+
+# Run the app
+npm run dev
+
+# Open http://localhost:3000
+{code}
+
+{info:title=What you get}
+* ✅ Complete API proxy routes
+* ✅ Working chat demo component
+* ✅ TypeScript service client
+* ✅ Environment configuration templates
+* ✅ All documentation files
+* ✅ Ready for deployment
+{info}
+
+h3. Option 2: Download as ZIP
+
+Visit [https://github.com/skwapong/paid-media-suite-demo] and click *Code* → *Download ZIP*
+
+h3. Option 3: Follow This Guide
+
+Continue reading this guide to build the integration from scratch step-by-step.
+
+{warning:title=⚙️ Quick Configuration Checklist}
+# Add {{TD_API_KEY}} to {{.env}} file
+# Add {{TD_LLM_BASE_URL}} to {{.env}} file
+# Update {{AGENT_ID}} in {{services/tdLlmService.ts}}
+# Run {{npm run dev}}
+# Test at {{http://localhost:3000}}
+{warning}
+
+h3. 📚 Additional Resources in Repository
+
+|| File || Description ||
+| {{README.md}} | Repository overview and quick links |
+| {{TD_AGENT_QUICK_START.md}} | 5-minute rapid setup guide |
+| {{TD_AGENT_STARTER_TEMPLATE_README.md}} | Complete template documentation |
+| {{TREASURE_DATA_AGENT_CONNECTION_GUIDE.md}} | This guide in Markdown format |
+| {{TREASURE_DATA_AGENT_CONNECTION_GUIDE_CONFLUENCE.txt}} | Confluence wiki format |
+
+----
+
 h2. 📖 Overview
 
 This guide explains how to integrate with Treasure Data's LLM Agent API to create interactive chat experiences. The implementation uses a *proxy pattern* where your Next.js application acts as a secure intermediary between the browser and Treasure Data's API.

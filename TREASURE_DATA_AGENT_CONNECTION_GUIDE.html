@@ -347,6 +347,7 @@
 
         <nav class="nav">
             <ul>
+                <li><a href="#quick-start">⚡ Quick Start</a></li>
                 <li><a href="#overview">Overview</a></li>
                 <li><a href="#prerequisites">Prerequisites</a></li>
                 <li><a href="#architecture">Architecture</a></li>
@@ -359,6 +360,96 @@
         </nav>
 
         <div class="content">
+            <!-- QUICK START SECTION -->
+            <section id="quick-start" class="section">
+                <h2>⚡ Quick Start - Download & Use</h2>
+
+                <div class="success-box">
+                    <strong>🎁 Ready-to-Use Starter Template Available!</strong>
+                    <p>Skip the setup and start coding immediately with our complete working template.</p>
+                </div>
+
+                <h3>Option 1: Clone the Repository (Fastest)</h3>
+                <pre><code># Clone the complete working template
+git clone https://github.com/skwapong/paid-media-suite-demo.git my-td-agent-app
+cd my-td-agent-app
+
+# Install dependencies
+npm install
+
+# Configure credentials
+cp .env.example .env
+# Edit .env with your TD_API_KEY and TD_LLM_BASE_URL
+
+# Update agent ID in services/tdLlmService.ts
+
+# Run the app
+npm run dev
+
+# Open http://localhost:3000</code></pre>
+
+                <div class="info-box">
+                    <strong>What you get:</strong>
+                    <ul>
+                        <li>✅ Complete API proxy routes</li>
+                        <li>✅ Working chat demo component</li>
+                        <li>✅ TypeScript service client</li>
+                        <li>✅ Environment configuration templates</li>
+                        <li>✅ All documentation files</li>
+                        <li>✅ Ready for deployment</li>
+                    </ul>
+                </div>
+
+                <h3>Option 2: Download as ZIP</h3>
+                <p>Visit <a href="https://github.com/skwapong/paid-media-suite-demo" target="_blank">https://github.com/skwapong/paid-media-suite-demo</a> and click "Code" → "Download ZIP"</p>
+
+                <h3>Option 3: Follow This Guide</h3>
+                <p>Continue reading this guide to build the integration from scratch step-by-step.</p>
+
+                <div class="warning-box">
+                    <strong>⚙️ Quick Configuration Checklist:</strong>
+                    <ol>
+                        <li>Add <code>TD_API_KEY</code> to <code>.env</code> file</li>
+                        <li>Add <code>TD_LLM_BASE_URL</code> to <code>.env</code> file</li>
+                        <li>Update <code>AGENT_ID</code> in <code>services/tdLlmService.ts</code></li>
+                        <li>Run <code>npm run dev</code></li>
+                        <li>Test at <code>http://localhost:3000</code></li>
+                    </ol>
+                </div>
+
+                <h3>📚 Additional Resources in Repository</h3>
+                <table>
+                    <thead>
+                        <tr>
+                            <th>File</th>
+                            <th>Description</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td><code>README.md</code></td>
+                            <td>Repository overview and quick links</td>
+                        </tr>
+                        <tr>
+                            <td><code>TD_AGENT_QUICK_START.md</code></td>
+                            <td>5-minute rapid setup guide</td>
+                        </tr>
+                        <tr>
+                            <td><code>TD_AGENT_STARTER_TEMPLATE_README.md</code></td>
+                            <td>Complete template documentation</td>
+                        </tr>
+                        <tr>
+                            <td><code>TREASURE_DATA_AGENT_CONNECTION_GUIDE.md</code></td>
+                            <td>This guide in Markdown format</td>
+                        </tr>
+                        <tr>
+                            <td><code>TREASURE_DATA_AGENT_CONNECTION_GUIDE_CONFLUENCE.txt</code></td>
+                            <td>Confluence wiki format</td>
+                        </tr>
+                    </tbody>
+                </table>
+            </section>
+
             <!-- OVERVIEW SECTION -->
             <section id="overview" class="section">
                 <h2>📖 Overview</h2>
