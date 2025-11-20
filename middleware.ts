@@ -4,12 +4,15 @@ import type { NextRequest } from 'next/server'
 const PASSWORD = '!PMAgentSquad!' // Simple hardcoded password
 
 export function middleware(request: NextRequest) {
-  // Skip auth for login page, API routes, and static files
+  // Skip auth for login page, API routes, static files, and documentation pages
   if (
     request.nextUrl.pathname === '/login' ||
     request.nextUrl.pathname.startsWith('/api/') ||
     request.nextUrl.pathname.startsWith('/_next/') ||
-    request.nextUrl.pathname.startsWith('/favicon')
+    request.nextUrl.pathname.startsWith('/favicon') ||
+    request.nextUrl.pathname.endsWith('.html') ||
+    request.nextUrl.pathname.endsWith('.md') ||
+    request.nextUrl.pathname.endsWith('.txt')
   ) {
     return NextResponse.next()
   }
