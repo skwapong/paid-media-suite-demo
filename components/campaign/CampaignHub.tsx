@@ -17,6 +17,7 @@ const CampaignHub: React.FC<CampaignHubProps> = ({ chatIdToLoad, onClearChat, is
   const [chatHistory, setChatHistory] = useState<Message[]>([])
   const [isLoadingHistory, setIsLoadingHistory] = useState(false)
   const [selectedAgentId, setSelectedAgentId] = useState<string | null>(null)
+  const [currentChatId, setCurrentChatId] = useState<string | null>(null)
   const { data: agentsData, isLoading } = useAgents()
 
   console.log('CampaignHub rendering, agents:', agentsData)
@@ -95,6 +96,7 @@ const CampaignHub: React.FC<CampaignHubProps> = ({ chatIdToLoad, onClearChat, is
 
       console.log('Restored messages:', messages)
       setChatHistory(messages)
+      setCurrentChatId(chatId)  // Set the chat ID so it can continue the conversation
     } catch (error) {
       console.error('Failed to load chat history:', error)
     } finally {
@@ -109,6 +111,7 @@ const CampaignHub: React.FC<CampaignHubProps> = ({ chatIdToLoad, onClearChat, is
     } else if (chatIdToLoad === null) {
       // Clear chat history when explicitly set to null
       setChatHistory([])
+      setCurrentChatId(null)
     }
   }, [chatIdToLoad, handleLoadChatHistory])
 
@@ -116,6 +119,7 @@ const CampaignHub: React.FC<CampaignHubProps> = ({ chatIdToLoad, onClearChat, is
   const handleClearChat = useCallback(() => {
     console.log('🔙 CampaignHub: Clearing chat and resetting to hub view')
     setChatHistory([])
+    setCurrentChatId(null)
     // Notify parent component to reset chatIdToLoad
     if (onClearChat) {
       console.log('🔙 CampaignHub: Calling onClearChat to reset chatIdToLoad')
@@ -294,6 +298,7 @@ const CampaignHub: React.FC<CampaignHubProps> = ({ chatIdToLoad, onClearChat, is
                 onChatHistoryChange={setChatHistory}
                 isLeftNavExpanded={isLeftNavExpanded}
                 onBack={handleClearChat}
+                chatId={currentChatId}
               />
 
               {/* Feature Cards */}

@@ -259,6 +259,7 @@ interface ChatWindowProps {
   onChatHistoryChange?: (messages: Message[]) => void
   isLeftNavExpanded?: boolean
   onBack?: () => void  // Callback for back button
+  chatId?: string | null  // Chat ID for continuing existing conversations
 }
 
 const ChatWindow: React.FC<ChatWindowProps> = ({
@@ -267,7 +268,8 @@ const ChatWindow: React.FC<ChatWindowProps> = ({
   chatHistory = [],
   onChatHistoryChange,
   isLeftNavExpanded = false,
-  onBack
+  onBack,
+  chatId
 }) => {
   const [isLoading, setIsLoading] = useState(false)
   const [messages, setMessages] = useState<Message[]>(chatHistory)
@@ -303,6 +305,14 @@ const ChatWindow: React.FC<ChatWindowProps> = ({
       setIsInitialized(true)
     }
   }, [isInitialized])
+
+  // Set chat ID when loading existing conversation
+  useEffect(() => {
+    if (chatId && tdServiceRef.current) {
+      console.log('Setting chat ID for existing conversation:', chatId)
+      tdServiceRef.current.setCurrentChatId(chatId)
+    }
+  }, [chatId])
 
   // Auto-scroll to bottom when new messages arrive
   useEffect(() => {
