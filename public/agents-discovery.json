@@ -26,7 +26,7 @@
   "agents": [
     {
       "id": "campaign-strategist-planner-agent",
-      "agent_id": "019a555a-2d62-7d98-89d7-0ec6dfcb0fdf",
+      "agent_id": "019adfd4-8e04-730d-a7ba-3c3e4c9abf81",
       "name": "Campaign Building",
       "description": "Campaign Strategist & Planner to help market team simplify their process to develop a campaign plan that is ready for execution",
       "capabilities": [
