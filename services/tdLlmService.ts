@@ -24,7 +24,7 @@ interface FileAttachment {
 }
 
 // Hardcoded agent ID
-const AGENT_ID = '019a555a-2d62-7d98-89d7-0ec6dfcb0fdf'
+const AGENT_ID = '019adfd4-8e04-730d-a7ba-3c3e4c9abf81'
 
 interface StreamEvent {
   content?: string
