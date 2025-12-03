@@ -32,6 +32,25 @@ interface Message {
   toolCalls?: ToolCall[]  // Tool calls made during message processing
 }
 
+// Smart content detection
+const detectContentType = (content: string) => {
+  const lines = content.split('\n').filter(line => line.trim())
+
+  // Detect if content has structured sections
+  const hasSections = lines.some(line => line.match(/^#{1,3}\s/))
+  const hasBulletList = lines.some(line => line.match(/^[-*]\s/))
+  const hasNumberedList = lines.some(line => line.match(/^\d+\.\s/))
+  const hasKeyPoints = content.toLowerCase().includes('key point') || content.toLowerCase().includes('important:')
+
+  return {
+    hasSections,
+    hasBulletList,
+    hasNumberedList,
+    hasKeyPoints,
+    isStructured: hasSections || hasBulletList || hasNumberedList
+  }
+}
+
 // Format message content with proper styling
 const formatMessageContent = (content: string) => {
   const lines = content.split('\n')
@@ -60,62 +79,131 @@ const formatMessageContent = (content: string) => {
   const flushList = () => {
     if (listItems.length > 0) {
       if (currentListType === 'numbered') {
+        // Numbered lists as step cards
         formatted.push(
-          <ol key={formatted.length} css={css`
-            margin: 16px 0;
-            padding-left: 32px;
-            list-style-type: decimal;
-            counter-reset: item;
-
-            li {
-              margin-bottom: 12px;
-              line-height: 1.7;
-              color: #374151;
-              position: relative;
-
-              &::marker {
-                color: #1957DB;
-                font-weight: 700;
-                font-size: 15px;
-              }
-
-              &:last-child {
-                margin-bottom: 0;
-              }
-            }
+          <div key={formatted.length} css={css`
+            margin: 20px 0;
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
           `}>
-            {listItems}
-          </ol>
+            {listItems.map((item, idx) => (
+              <div key={idx} css={css`
+                display: flex;
+                gap: 12px;
+                padding: 16px;
+                background: linear-gradient(135deg, #F0F9FF 0%, #E0F2FE 100%);
+                border-left: 4px solid #1957DB;
+                border-radius: 8px;
+                transition: all 0.2s ease;
+                animation: slideIn 0.3s ease-out;
+                animation-delay: ${idx * 0.05}s;
+                animation-fill-mode: both;
+
+                @keyframes slideIn {
+                  from {
+                    opacity: 0;
+                    transform: translateX(-10px);
+                  }
+                  to {
+                    opacity: 1;
+                    transform: translateX(0);
+                  }
+                }
+
+                &:hover {
+                  background: linear-gradient(135deg, #E0F2FE 0%, #BAE6FD 100%);
+                  transform: translateX(4px);
+                }
+              `}>
+                <div css={css`
+                  min-width: 28px;
+                  height: 28px;
+                  border-radius: 50%;
+                  background: #1957DB;
+                  color: white;
+                  display: flex;
+                  align-items: center;
+                  justify-content: center;
+                  font-family: 'Figtree', sans-serif;
+                  font-weight: 700;
+                  font-size: 14px;
+                  flex-shrink: 0;
+                `}>
+                  {idx + 1}
+                </div>
+                <div css={css`
+                  flex: 1;
+                  line-height: 1.6;
+                  color: #0C4A6E;
+                  font-size: 14px;
+                `}>
+                  {item}
+                </div>
+              </div>
+            ))}
+          </div>
         )
       } else {
+        // Bullet lists with icons
         formatted.push(
-          <ul key={formatted.length} css={css`
-            margin: 12px 0;
-            padding-left: 32px;
-            list-style-type: none;
-
-            li {
-              margin-bottom: 10px;
-              line-height: 1.7;
-              color: #374151;
-              position: relative;
-
-              &::before {
-                content: '•';
-                color: #1957DB;
-                font-weight: bold;
-                font-size: 18px;
-                position: absolute;
-                left: -20px;
-              }
-
-              &:last-child {
-                margin-bottom: 0;
-              }
-            }
+          <div key={formatted.length} css={css`
+            margin: 16px 0;
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
           `}>
-            {listItems}
-          </ul>
+            {listItems.map((item, idx) => (
+              <div key={idx} css={css`
+                display: flex;
+                gap: 10px;
+                align-items: flex-start;
+                padding: 8px 12px;
+                transition: all 0.2s ease;
+                border-radius: 6px;
+                animation: fadeIn 0.3s ease-out;
+                animation-delay: ${idx * 0.05}s;
+                animation-fill-mode: both;
+
+                @keyframes fadeIn {
+                  from {
+                    opacity: 0;
+                  }
+                  to {
+                    opacity: 1;
+                  }
+                }
+
+                &:hover {
+                  background-color: #F9FAFB;
+                }
+              `}>
+                <div css={css`
+                  min-width: 20px;
+                  height: 20px;
+                  margin-top: 2px;
+                  border-radius: 50%;
+                  background: linear-gradient(135deg, #10B981 0%, #059669 100%);
+                  display: flex;
+                  align-items: center;
+                  justify-content: center;
+                  flex-shrink: 0;
+                `}>
+                  <svg width="10" height="10" viewBox="0 0 10 10" fill="none" xmlns="http://www.w3.org/2000/svg">
+                    <path d="M2 5L4 7L8 3" stroke="white" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/>
+                  </svg>
+                </div>
+                <div css={css`
+                  flex: 1;
+                  line-height: 1.6;
+                  color: #374151;
+                  font-size: 14px;
+                `}>
+                  {item}
+                </div>
+              </div>
+            ))}
+          </div>
         )
       }
       listItems = []
@@ -152,20 +240,58 @@ const formatMessageContent = (content: string) => {
     // Check for headings (## or **) and remove the ## markers
     const headingMatch = line.match(/^##\s*\*\*(.+?)\*\*\s*$/)
     if (headingMatch) {
-      // Heading with ** markers - just render as bold heading
+      // Heading with ** markers - render as section card
       formatted.push(
         <div key={`line-${index}-${line.substring(0, 20)}`} css={css`
-          font-weight: 700;
-          font-size: 15px;
-          color: #111827;
-          margin: 20px 0 12px 0;
-          letter-spacing: -0.01em;
+          display: flex;
+          align-items: center;
+          gap: 12px;
+          padding: 14px 16px;
+          background: linear-gradient(135deg, #FEF3C7 0%, #FDE68A 100%);
+          border-left: 4px solid #F59E0B;
+          border-radius: 8px;
+          margin: 20px 0 16px 0;
+          animation: slideIn 0.3s ease-out;
+
+          @keyframes slideIn {
+            from {
+              opacity: 0;
+              transform: translateX(-10px);
+            }
+            to {
+              opacity: 1;
+              transform: translateX(0);
+            }
+          }
 
           &:first-of-type {
             margin-top: 4px;
           }
         `}>
-          {headingMatch[1]}
+          <div css={css`
+            min-width: 24px;
+            height: 24px;
+            border-radius: 50%;
+            background: #F59E0B;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            flex-shrink: 0;
+          `}>
+            <svg width="12" height="12" viewBox="0 0 12 12" fill="none" xmlns="http://www.w3.org/2000/svg">
+              <path d="M6 2V6L8 8" stroke="white" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/>
+              <circle cx="6" cy="6" r="4.5" stroke="white" strokeWidth="1.5"/>
+            </svg>
+          </div>
+          <div css={css`
+            font-family: 'Figtree', sans-serif;
+            font-weight: 700;
+            font-size: 15px;
+            color: #92400E;
+            letter-spacing: -0.01em;
+          `}>
+            {headingMatch[1]}
+          </div>
         </div>
       )
       return
@@ -176,17 +302,55 @@ const formatMessageContent = (content: string) => {
     if (plainHeadingMatch) {
       formatted.push(
         <div key={`line-${index}-${line.substring(0, 20)}`} css={css`
-          font-weight: 700;
-          font-size: 15px;
-          color: #111827;
-          margin: 20px 0 12px 0;
-          letter-spacing: -0.01em;
+          display: flex;
+          align-items: center;
+          gap: 12px;
+          padding: 14px 16px;
+          background: linear-gradient(135deg, #FEF3C7 0%, #FDE68A 100%);
+          border-left: 4px solid #F59E0B;
+          border-radius: 8px;
+          margin: 20px 0 16px 0;
+          animation: slideIn 0.3s ease-out;
+
+          @keyframes slideIn {
+            from {
+              opacity: 0;
+              transform: translateX(-10px);
+            }
+            to {
+              opacity: 1;
+              transform: translateX(0);
+            }
+          }
 
           &:first-of-type {
             margin-top: 4px;
           }
         `}>
-          {processBoldText(plainHeadingMatch[1])}
+          <div css={css`
+            min-width: 24px;
+            height: 24px;
+            border-radius: 50%;
+            background: #F59E0B;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            flex-shrink: 0;
+          `}>
+            <svg width="12" height="12" viewBox="0 0 12 12" fill="none" xmlns="http://www.w3.org/2000/svg">
+              <path d="M6 2V6L8 8" stroke="white" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/>
+              <circle cx="6" cy="6" r="4.5" stroke="white" strokeWidth="1.5"/>
+            </svg>
+          </div>
+          <div css={css`
+            font-family: 'Figtree', sans-serif;
+            font-weight: 700;
+            font-size: 15px;
+            color: #92400E;
+            letter-spacing: -0.01em;
+          `}>
+            {processBoldText(plainHeadingMatch[1])}
+          </div>
         </div>
       )
       return
@@ -197,17 +361,55 @@ const formatMessageContent = (content: string) => {
     if (hashMatch) {
       formatted.push(
         <div key={`line-${index}-${line.substring(0, 20)}`} css={css`
-          font-weight: 700;
-          font-size: 15px;
-          color: #111827;
-          margin: 20px 0 12px 0;
-          letter-spacing: -0.01em;
+          display: flex;
+          align-items: center;
+          gap: 12px;
+          padding: 14px 16px;
+          background: linear-gradient(135deg, #FEF3C7 0%, #FDE68A 100%);
+          border-left: 4px solid #F59E0B;
+          border-radius: 8px;
+          margin: 20px 0 16px 0;
+          animation: slideIn 0.3s ease-out;
+
+          @keyframes slideIn {
+            from {
+              opacity: 0;
+              transform: translateX(-10px);
+            }
+            to {
+              opacity: 1;
+              transform: translateX(0);
+            }
+          }
 
           &:first-of-type {
             margin-top: 4px;
           }
         `}>
-          {processBoldText(hashMatch[1])}
+          <div css={css`
+            min-width: 24px;
+            height: 24px;
+            border-radius: 50%;
+            background: #F59E0B;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            flex-shrink: 0;
+          `}>
+            <svg width="12" height="12" viewBox="0 0 12 12" fill="none" xmlns="http://www.w3.org/2000/svg">
+              <path d="M6 2V6L8 8" stroke="white" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/>
+              <circle cx="6" cy="6" r="4.5" stroke="white" strokeWidth="1.5"/>
+            </svg>
+          </div>
+          <div css={css`
+            font-family: 'Figtree', sans-serif;
+            font-weight: 700;
+            font-size: 15px;
+            color: #92400E;
+            letter-spacing: -0.01em;
+          `}>
+            {processBoldText(hashMatch[1])}
+          </div>
         </div>
       )
       return
@@ -221,6 +423,95 @@ const formatMessageContent = (content: string) => {
           border-top: 1px solid #E5E7EB;
           margin: 20px 0;
         `} />
+      )
+      return
+    }
+
+    // Check for key points or important callouts
+    const keyPointMatch = line.match(/^\*\*(Key Point|Important|Note|Tip|Warning):\*\*\s*(.+)$/i)
+    if (keyPointMatch) {
+      const type = keyPointMatch[1].toLowerCase()
+      const content = keyPointMatch[2]
+
+      // Choose colors and icons based on type
+      let bgGradient = 'linear-gradient(135deg, #DBEAFE 0%, #BFDBFE 100%)'
+      let borderColor = '#3B82F6'
+      let iconColor = '#1D4ED8'
+      let textColor = '#1E3A8A'
+      let icon = '💡'
+
+      if (type === 'important' || type === 'warning') {
+        bgGradient = 'linear-gradient(135deg, #FEE2E2 0%, #FECACA 100%)'
+        borderColor = '#EF4444'
+        iconColor = '#B91C1C'
+        textColor = '#7F1D1D'
+        icon = '⚠️'
+      } else if (type === 'tip') {
+        bgGradient = 'linear-gradient(135deg, #D1FAE5 0%, #A7F3D0 100%)'
+        borderColor = '#10B981'
+        iconColor = '#047857'
+        textColor = '#064E3B'
+        icon = '✨'
+      } else if (type === 'note') {
+        bgGradient = 'linear-gradient(135deg, #E0E7FF 0%, #C7D2FE 100%)'
+        borderColor = '#6366F1'
+        iconColor = '#4338CA'
+        textColor = '#312E81'
+        icon = '📌'
+      }
+
+      formatted.push(
+        <div key={`line-${index}-${line.substring(0, 20)}`} css={css`
+          display: flex;
+          gap: 12px;
+          padding: 16px;
+          background: ${bgGradient};
+          border-left: 4px solid ${borderColor};
+          border-radius: 8px;
+          margin: 16px 0;
+          animation: fadeIn 0.3s ease-out;
+
+          @keyframes fadeIn {
+            from {
+              opacity: 0;
+              transform: translateY(-5px);
+            }
+            to {
+              opacity: 1;
+              transform: translateY(0);
+            }
+          }
+        `}>
+          <div css={css`
+            font-size: 20px;
+            line-height: 1;
+            flex-shrink: 0;
+            margin-top: 2px;
+          `}>
+            {icon}
+          </div>
+          <div css={css`
+            flex: 1;
+          `}>
+            <div css={css`
+              font-family: 'Figtree', sans-serif;
+              font-weight: 700;
+              font-size: 14px;
+              color: ${iconColor};
+              margin-bottom: 6px;
+            `}>
+              {keyPointMatch[1]}
+            </div>
+            <div css={css`
+              font-family: 'Figtree', sans-serif;
+              font-size: 14px;
+              color: ${textColor};
+              line-height: 1.6;
+            `}>
+              {processBoldText(content)}
+            </div>
+          </div>
+        </div>
       )
       return
     }

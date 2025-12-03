@@ -63,11 +63,15 @@ const ToolResponseRenderer: React.FC<ToolResponseProps> = ({ toolCall, success =
   return (
     <div css={css`
       background-color: #ffffff;
-      border: 1px solid #E5E7EB;
+      border: 1px solid ${isSuccess ? '#D1FAE5' : '#FEE2E2'};
       border-radius: 8px;
       padding: 16px;
       margin-bottom: 12px;
       box-shadow: 0px 1px 3px rgba(0, 0, 0, 0.1);
+      transition: all 0.2s ease;
+      &:hover {
+        box-shadow: 0px 2px 6px rgba(0, 0, 0, 0.15);
+      }
     `}>
       {/* Header with tool name and View button */}
       <div css={css`
@@ -78,25 +82,92 @@ const ToolResponseRenderer: React.FC<ToolResponseProps> = ({ toolCall, success =
       `}>
         <div css={css`
           display: flex;
-          flex-direction: column;
-          gap: 4px;
+          align-items: center;
+          gap: 12px;
           flex: 1;
         `}>
-          <span css={css`
-            font-family: 'Figtree', sans-serif;
-            font-weight: 600;
-            font-size: 14px;
-            color: #111827;
+          {/* Status indicator icon */}
+          <div css={css`
+            min-width: 32px;
+            height: 32px;
+            border-radius: 50%;
+            background: ${isSuccess
+              ? 'linear-gradient(135deg, #10B981 0%, #059669 100%)'
+              : 'linear-gradient(135deg, #EF4444 0%, #DC2626 100%)'};
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            flex-shrink: 0;
+            box-shadow: 0 2px 8px ${isSuccess ? 'rgba(16, 185, 129, 0.3)' : 'rgba(239, 68, 68, 0.3)'};
           `}>
-            {toolCall.function_name || 'Tool Call'}
-          </span>
-          <span css={css`
-            font-family: 'Figtree', sans-serif;
-            font-size: 12px;
-            color: #6B7280;
+            {isSuccess ? (
+              <svg width="16" height="16" viewBox="0 0 16 16" fill="none" xmlns="http://www.w3.org/2000/svg">
+                <path d="M3 8L6 11L13 4" stroke="white" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
+              </svg>
+            ) : (
+              <svg width="16" height="16" viewBox="0 0 16 16" fill="none" xmlns="http://www.w3.org/2000/svg">
+                <path d="M12 4L4 12M4 4L12 12" stroke="white" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
+              </svg>
+            )}
+          </div>
+
+          <div css={css`
+            display: flex;
+            flex-direction: column;
+            gap: 4px;
+            flex: 1;
           `}>
-            {isSuccess ? 'Executing action' : 'Failed'}
-          </span>
+            <span css={css`
+              font-family: 'Figtree', sans-serif;
+              font-weight: 600;
+              font-size: 14px;
+              color: #111827;
+            `}>
+              {toolCall.function_name || 'Tool Call'}
+            </span>
+            <div css={css`
+              display: flex;
+              align-items: center;
+              gap: 6px;
+            `}>
+              <span css={css`
+                display: inline-flex;
+                align-items: center;
+                gap: 4px;
+                padding: 2px 8px;
+                border-radius: 12px;
+                background-color: ${isSuccess ? '#D1FAE5' : '#FEE2E2'};
+                font-family: 'Figtree', sans-serif;
+                font-size: 11px;
+                font-weight: 600;
+                color: ${isSuccess ? '#047857' : '#B91C1C'};
+                text-transform: uppercase;
+                letter-spacing: 0.5px;
+              `}>
+                <span css={css`
+                  width: 6px;
+                  height: 6px;
+                  border-radius: 50%;
+                  background-color: ${isSuccess ? '#10B981' : '#EF4444'};
+                `} />
+                {isSuccess ? 'Success' : 'Failed'}
+              </span>
+              <span css={css`
+                font-family: 'Figtree', sans-serif;
+                font-size: 12px;
+                color: #9CA3AF;
+              `}>
+                •
+              </span>
+              <span css={css`
+                font-family: 'Figtree', sans-serif;
+                font-size: 12px;
+                color: #6B7280;
+              `}>
+                {isSuccess ? 'Action completed' : 'Execution failed'}
+              </span>
+            </div>
+          </div>
         </div>
 
         <div css={css`
