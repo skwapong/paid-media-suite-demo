@@ -977,6 +977,47 @@ const ChatWindow: React.FC<ChatWindowProps> = ({
     messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' })
   }
 
+  // Scroll to next message
+  const scrollToNextMessage = () => {
+    if (!messagesContainerRef.current) return
+    const container = messagesContainerRef.current
+    const messageElements = container.querySelectorAll('.message-container')
+    const scrollTop = container.scrollTop
+    const containerTop = container.getBoundingClientRect().top
+
+    // Find the first message below current scroll position
+    for (let i = 0; i < messageElements.length; i++) {
+      const element = messageElements[i] as HTMLElement
+      const elementTop = element.getBoundingClientRect().top - containerTop
+      if (elementTop > 50) {
+        element.scrollIntoView({ behavior: 'smooth', block: 'start' })
+        return
+      }
+    }
+    // If no message found, scroll to bottom
+    scrollToBottom()
+  }
+
+  // Scroll to previous message
+  const scrollToPreviousMessage = () => {
+    if (!messagesContainerRef.current) return
+    const container = messagesContainerRef.current
+    const messageElements = container.querySelectorAll('.message-container')
+    const containerTop = container.getBoundingClientRect().top
+
+    // Find the last message above current scroll position
+    for (let i = messageElements.length - 1; i >= 0; i--) {
+      const element = messageElements[i] as HTMLElement
+      const elementTop = element.getBoundingClientRect().top - containerTop
+      if (elementTop < -50) {
+        element.scrollIntoView({ behavior: 'smooth', block: 'start' })
+        return
+      }
+    }
+    // If no message found, scroll to top
+    scrollToTop()
+  }
+
   // Export chat as Markdown
   const handleExportChat = () => {
     const timestamp = new Date().toISOString().split('T')[0]
@@ -1117,14 +1158,17 @@ const ChatWindow: React.FC<ChatWindowProps> = ({
         </header>
 
         {/* Messages Area */}
-        <div css={css`
-          flex: 1;
-          overflow-y: auto;
-          padding: 24px;
-          display: flex;
-          flex-direction: column;
-          gap: 16px;
-        `}>
+        <div
+          ref={messagesContainerRef}
+          css={css`
+            flex: 1;
+            overflow-y: auto;
+            padding: 24px;
+            display: flex;
+            flex-direction: column;
+            gap: 16px;
+            position: relative;
+          `}>
           {messages.map((msg, index) => {
             // Special rendering for greeting message
             if (msg.content === 'GREETING' && msg.type === 'assistant') {
@@ -1400,6 +1444,147 @@ const ChatWindow: React.FC<ChatWindowProps> = ({
             )
           })}
           <div ref={messagesEndRef} />
+
+          {/* Floating Navigation Controls */}
+          {messages.length > 2 && (
+            <div css={css`
+              position: fixed;
+              right: 32px;
+              bottom: 120px;
+              display: flex;
+              flex-direction: column;
+              gap: 8px;
+              z-index: 50;
+            `}>
+              {/* Scroll to Top */}
+              <button
+                onClick={scrollToTop}
+                title="Scroll to top"
+                css={css`
+                  width: 44px;
+                  height: 44px;
+                  border-radius: 50%;
+                  background: linear-gradient(135deg, #6F2EFF 0%, #1957DB 100%);
+                  border: none;
+                  display: flex;
+                  align-items: center;
+                  justify-content: center;
+                  cursor: pointer;
+                  box-shadow: 0 4px 12px rgba(111, 46, 255, 0.3);
+                  transition: all 0.2s ease;
+
+                  &:hover {
+                    transform: translateY(-2px);
+                    box-shadow: 0 6px 16px rgba(111, 46, 255, 0.4);
+                  }
+
+                  &:active {
+                    transform: translateY(0);
+                  }
+                `}
+              >
+                <svg width="20" height="20" viewBox="0 0 20 20" fill="none" xmlns="http://www.w3.org/2000/svg">
+                  <path d="M10 15V5M10 5L5 10M10 5L15 10" stroke="white" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
+                </svg>
+              </button>
+
+              {/* Previous Message */}
+              <button
+                onClick={scrollToPreviousMessage}
+                title="Previous message"
+                css={css`
+                  width: 44px;
+                  height: 44px;
+                  border-radius: 50%;
+                  background: white;
+                  border: 2px solid #DCE1EA;
+                  display: flex;
+                  align-items: center;
+                  justify-content: center;
+                  cursor: pointer;
+                  transition: all 0.2s ease;
+
+                  &:hover {
+                    border-color: #6F2EFF;
+                    transform: translateY(-2px);
+                    box-shadow: 0 4px 12px rgba(111, 46, 255, 0.2);
+                  }
+
+                  &:active {
+                    transform: translateY(0);
+                  }
+                `}
+              >
+                <svg width="20" height="20" viewBox="0 0 20 20" fill="none" xmlns="http://www.w3.org/2000/svg">
+                  <path d="M10 14L10 6M10 6L6 10M10 6L14 10" stroke="#6F2EFF" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
+                </svg>
+              </button>
+
+              {/* Next Message */}
+              <button
+                onClick={scrollToNextMessage}
+                title="Next message"
+                css={css`
+                  width: 44px;
+                  height: 44px;
+                  border-radius: 50%;
+                  background: white;
+                  border: 2px solid #DCE1EA;
+                  display: flex;
+                  align-items: center;
+                  justify-content: center;
+                  cursor: pointer;
+                  transition: all 0.2s ease;
+
+                  &:hover {
+                    border-color: #6F2EFF;
+                    transform: translateY(-2px);
+                    box-shadow: 0 4px 12px rgba(111, 46, 255, 0.2);
+                  }
+
+                  &:active {
+                    transform: translateY(0);
+                  }
+                `}
+              >
+                <svg width="20" height="20" viewBox="0 0 20 20" fill="none" xmlns="http://www.w3.org/2000/svg">
+                  <path d="M10 6L10 14M10 14L14 10M10 14L6 10" stroke="#6F2EFF" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
+                </svg>
+              </button>
+
+              {/* Scroll to Bottom */}
+              <button
+                onClick={scrollToBottom}
+                title="Scroll to bottom"
+                css={css`
+                  width: 44px;
+                  height: 44px;
+                  border-radius: 50%;
+                  background: linear-gradient(135deg, #6F2EFF 0%, #1957DB 100%);
+                  border: none;
+                  display: flex;
+                  align-items: center;
+                  justify-content: center;
+                  cursor: pointer;
+                  box-shadow: 0 4px 12px rgba(111, 46, 255, 0.3);
+                  transition: all 0.2s ease;
+
+                  &:hover {
+                    transform: translateY(-2px);
+                    box-shadow: 0 6px 16px rgba(111, 46, 255, 0.4);
+                  }
+
+                  &:active {
+                    transform: translateY(0);
+                  }
+                `}
+              >
+                <svg width="20" height="20" viewBox="0 0 20 20" fill="none" xmlns="http://www.w3.org/2000/svg">
+                  <path d="M10 5V15M10 15L15 10M10 15L5 10" stroke="white" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
+                </svg>
+              </button>
+            </div>
+          )}
         </div>
 
         {/* Input Area */}
