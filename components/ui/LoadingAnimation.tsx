@@ -35,9 +35,13 @@ const LoadingAnimation: React.FC<LoadingAnimationProps> = ({
       flex-direction: column;
       align-items: center;
       justify-content: center;
-      height: 100%;
+      min-height: 400px;
       padding: 40px;
       text-align: center;
+      background-color: #ffffff;
+      border-radius: 12px;
+      border: 1px solid #E5E7EB;
+      box-shadow: 0px 2px 4px rgba(0, 0, 0, 0.05);
     `}>
       {/* Animated Circles */}
       <div css={css`
