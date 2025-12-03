@@ -2470,81 +2470,155 @@ const ChatWindow: React.FC<ChatWindowProps> = ({
               flex-direction: column;
               gap: 8px;
             `}>
-            {/* Scroll to Top Button */}
-            <button
-              onClick={scrollToTop}
-              title="Scroll to top"
-              css={css`
-                display: flex;
-                align-items: center;
-                justify-content: center;
-                width: 36px;
-                height: 36px;
-                background: linear-gradient(135deg, #6F2EFF 0%, #1957DB 100%);
-                border: none;
-                border-radius: 50%;
-                cursor: pointer;
-                box-shadow: 0 2px 8px rgba(111, 46, 255, 0.3);
-                transition: all 0.2s;
+              {/* Scroll to Top Button */}
+              <button
+                onClick={scrollToTop}
+                title="Scroll to top"
+                css={css`
+                  display: flex;
+                  align-items: center;
+                  justify-content: center;
+                  width: 40px;
+                  height: 40px;
+                  background: linear-gradient(135deg, #6F2EFF 0%, #1957DB 100%);
+                  border: none;
+                  border-radius: 50%;
+                  cursor: pointer;
+                  box-shadow: 0 2px 8px rgba(111, 46, 255, 0.3);
+                  transition: all 0.2s;
 
-                &:hover {
-                  transform: translateY(-2px);
-                  box-shadow: 0 4px 12px rgba(111, 46, 255, 0.4);
-                }
+                  &:hover {
+                    transform: translateY(-2px);
+                    box-shadow: 0 4px 12px rgba(111, 46, 255, 0.4);
+                  }
 
-                &:active {
-                  transform: translateY(0);
-                }
+                  &:active {
+                    transform: translateY(0);
+                  }
 
-                svg {
-                  width: 16px;
-                  height: 16px;
-                  color: white;
-                }
-              `}
-            >
-              <svg width="16" height="16" viewBox="0 0 16 16" fill="none" xmlns="http://www.w3.org/2000/svg">
-                <path d="M8 12V4M8 4L4 8M8 4L12 8" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
-              </svg>
-            </button>
+                  svg {
+                    width: 18px;
+                    height: 18px;
+                    color: white;
+                  }
+                `}
+              >
+                <svg width="18" height="18" viewBox="0 0 20 20" fill="none" xmlns="http://www.w3.org/2000/svg">
+                  <path d="M10 15V5M10 5L5 10M10 5L15 10" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
+                </svg>
+              </button>
 
-            {/* Scroll to Bottom Button */}
-            <button
-              onClick={scrollToBottom}
-              title="Scroll to bottom"
-              css={css`
-                display: flex;
-                align-items: center;
-                justify-content: center;
-                width: 36px;
-                height: 36px;
-                background: linear-gradient(135deg, #6F2EFF 0%, #1957DB 100%);
-                border: none;
-                border-radius: 50%;
-                cursor: pointer;
-                box-shadow: 0 2px 8px rgba(111, 46, 255, 0.3);
-                transition: all 0.2s;
+              {/* Previous Message Button */}
+              <button
+                onClick={scrollToPreviousMessage}
+                title="Previous message"
+                css={css`
+                  display: flex;
+                  align-items: center;
+                  justify-content: center;
+                  width: 40px;
+                  height: 40px;
+                  background: white;
+                  border: 2px solid #DCE1EA;
+                  border-radius: 50%;
+                  cursor: pointer;
+                  transition: all 0.2s;
 
-                &:hover {
-                  transform: translateY(-2px);
-                  box-shadow: 0 4px 12px rgba(111, 46, 255, 0.4);
-                }
+                  &:hover {
+                    border-color: #6F2EFF;
+                    transform: translateY(-2px);
+                    box-shadow: 0 4px 12px rgba(111, 46, 255, 0.2);
+                  }
 
-                &:active {
-                  transform: translateY(0);
-                }
+                  &:active {
+                    transform: translateY(0);
+                  }
 
-                svg {
-                  width: 16px;
-                  height: 16px;
-                  color: white;
-                }
-              `}
-            >
-              <svg width="16" height="16" viewBox="0 0 16 16" fill="none" xmlns="http://www.w3.org/2000/svg">
-                <path d="M8 4V12M8 12L12 8M8 12L4 8" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
-              </svg>
-            </button>
+                  svg {
+                    width: 18px;
+                    height: 18px;
+                  }
+                `}
+              >
+                <svg width="18" height="18" viewBox="0 0 20 20" fill="none" xmlns="http://www.w3.org/2000/svg">
+                  <path d="M10 14L10 6M10 6L6 10M10 6L14 10" stroke="#6F2EFF" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
+                </svg>
+              </button>
+
+              {/* Next Message Button */}
+              <button
+                onClick={scrollToNextMessage}
+                title="Next message"
+                css={css`
+                  display: flex;
+                  align-items: center;
+                  justify-content: center;
+                  width: 40px;
+                  height: 40px;
+                  background: white;
+                  border: 2px solid #DCE1EA;
+                  border-radius: 50%;
+                  cursor: pointer;
+                  transition: all 0.2s;
+
+                  &:hover {
+                    border-color: #6F2EFF;
+                    transform: translateY(-2px);
+                    box-shadow: 0 4px 12px rgba(111, 46, 255, 0.2);
+                  }
+
+                  &:active {
+                    transform: translateY(0);
+                  }
+
+                  svg {
+                    width: 18px;
+                    height: 18px;
+                  }
+                `}
+              >
+                <svg width="18" height="18" viewBox="0 0 20 20" fill="none" xmlns="http://www.w3.org/2000/svg">
+                  <path d="M10 6L10 14M10 14L14 10M10 14L6 10" stroke="#6F2EFF" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
+                </svg>
+              </button>
+
+              {/* Scroll to Bottom Button */}
+              <button
+                onClick={scrollToBottom}
+                title="Scroll to bottom"
+                css={css`
+                  display: flex;
+                  align-items: center;
+                  justify-content: center;
+                  width: 40px;
+                  height: 40px;
+                  background: linear-gradient(135deg, #6F2EFF 0%, #1957DB 100%);
+                  border: none;
+                  border-radius: 50%;
+                  cursor: pointer;
+                  box-shadow: 0 2px 8px rgba(111, 46, 255, 0.3);
+                  transition: all 0.2s;
+
+                  &:hover {
+                    transform: translateY(-2px);
+                    box-shadow: 0 4px 12px rgba(111, 46, 255, 0.4);
+                  }
+
+                  &:active {
+                    transform: translateY(0);
+                  }
+
+                  svg {
+                    width: 18px;
+                    height: 18px;
+                    color: white;
+                  }
+                `}
+              >
+                <svg width="18" height="18" viewBox="0 0 20 20" fill="none" xmlns="http://www.w3.org/2000/svg">
+                  <path d="M10 5V15M10 15L15 10M10 15L5 10" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
+                </svg>
+              </button>
             </div>
           </div>
         </div>
