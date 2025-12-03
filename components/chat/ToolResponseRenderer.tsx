@@ -13,8 +13,7 @@ interface ToolResponseProps {
 }
 
 const ToolResponseRenderer: React.FC<ToolResponseProps> = ({ toolCall, success = true }) => {
-  const [showArguments, setShowArguments] = useState(false)
-  const [showResponse, setShowResponse] = useState(false)
+  const [isExpanded, setIsExpanded] = useState(true)
 
   // Determine if this tool call was successful
   const isSuccess = success && toolCall.status !== 'ERROR' && toolCall.status !== 'FAILED'
@@ -37,202 +36,221 @@ const ToolResponseRenderer: React.FC<ToolResponseProps> = ({ toolCall, success =
     }
   }
 
-  // Format output/response for display
+  // Parse and format output for better display
   const formatOutput = () => {
     try {
       if (typeof toolCall.output === 'string') {
-        const parsed = JSON.parse(toolCall.output)
-        return JSON.stringify(parsed, null, 2)
+        // Try to parse as JSON first
+        try {
+          const parsed = JSON.parse(toolCall.output)
+          return { type: 'json', content: JSON.stringify(parsed, null, 2) }
+        } catch {
+          // If not JSON, return as text
+          return { type: 'text', content: toolCall.output }
+        }
       }
-      return JSON.stringify(toolCall.output, null, 2)
+      return { type: 'json', content: JSON.stringify(toolCall.output, null, 2) }
     } catch {
-      return typeof toolCall.output === 'string'
-        ? toolCall.output
-        : JSON.stringify(toolCall.output, null, 2)
+      return {
+        type: 'text',
+        content: typeof toolCall.output === 'string' ? toolCall.output : JSON.stringify(toolCall.output, null, 2)
+      }
     }
   }
 
+  const output = formatOutput()
+
   return (
     <div css={css`
-      background-color: ${isOutputTool ? '#FEF3C7' : '#E0F2FE'};
-      border: 1px solid ${isOutputTool ? '#FCD34D' : '#BAE6FD'};
+      background-color: #ffffff;
+      border: 1px solid #E5E7EB;
       border-radius: 8px;
-      padding: 12px;
-      margin-bottom: 8px;
+      padding: 16px;
+      margin-bottom: 12px;
+      box-shadow: 0px 1px 3px rgba(0, 0, 0, 0.1);
     `}>
-      {/* Header */}
+      {/* Header with tool name and View button */}
       <div css={css`
         display: flex;
         align-items: center;
-        gap: 8px;
-        color: ${isOutputTool ? '#92400E' : '#0369A1'};
+        justify-content: space-between;
         margin-bottom: 8px;
       `}>
-        {/* Expand icon */}
-        <button
-          onClick={() => setShowArguments(!showArguments)}
-          css={css`
-            background: none;
-            border: none;
-            cursor: pointer;
-            padding: 0;
-            display: flex;
-            align-items: center;
-            color: inherit;
-            transition: transform 0.2s;
-            transform: rotate(${showArguments ? '90deg' : '0deg'});
-          `}
-        >
-          <ChevronIcon />
-        </button>
-
-        {/* Tool icon */}
-        <ToolIcon />
-
-        {/* Tool name */}
-        <span css={css`
-          font-family: 'Figtree', sans-serif;
-          font-weight: 600;
-          font-size: 12px;
-          color: ${!isSuccess ? '#DC2626' : 'inherit'};
-        `}>
-          {isOutputTool ? 'Calling' : 'Internal Tool'}: {toolCall.function_name}
-        </span>
-
-        {/* Status badge */}
-        <span css={css`
-          background-color: ${isSuccess ? '#D1FAE5' : '#FEE2E2'};
-          color: ${isSuccess ? '#065F46' : '#991B1B'};
-          border: 1px solid ${isSuccess ? '#6EE7B7' : '#FCA5A5'};
-          border-radius: 4px;
-          padding: 2px 6px;
-          font-family: 'Figtree', sans-serif;
-          font-weight: 600;
-          font-size: 10px;
-        `}>
-          {isSuccess ? 'SUCCESS' : 'ERROR'}
-        </span>
-      </div>
-
-      {/* Expandable Arguments Section */}
-      {showArguments && toolCall.function_arguments && (
         <div css={css`
-          border-top: 1px solid ${isOutputTool ? '#FDE68A' : '#7DD3FC'};
-          padding-top: 12px;
-          margin-top: 8px;
+          display: flex;
+          flex-direction: column;
+          gap: 4px;
+          flex: 1;
         `}>
-          <div css={css`
+          <span css={css`
             font-family: 'Figtree', sans-serif;
-            font-size: 11px;
             font-weight: 600;
-            color: ${isOutputTool ? '#78350F' : '#075985'};
-            margin-bottom: 8px;
-            opacity: 0.7;
+            font-size: 14px;
+            color: #111827;
           `}>
-            Input Arguments – ID: {toolCall.id}
-          </div>
-          <pre css={css`
-            font-family: 'Monaco', 'Courier New', monospace;
-            font-size: 11px;
-            color: ${isOutputTool ? '#92400E' : '#0369A1'};
-            white-space: pre-wrap;
-            word-wrap: break-word;
-            margin: 0;
-            opacity: 0.8;
-            max-height: 300px;
-            overflow-y: auto;
+            {toolCall.function_name || 'Tool Call'}
+          </span>
+          <span css={css`
+            font-family: 'Figtree', sans-serif;
+            font-size: 12px;
+            color: #6B7280;
           `}>
-            {formatArguments()}
-          </pre>
+            {isSuccess ? 'Executing action' : 'Failed'}
+          </span>
         </div>
-      )}
 
-      {/* Response Section (for output tools) */}
-      {isOutputTool && (
         <div css={css`
-          margin-top: 8px;
+          display: flex;
+          align-items: center;
+          gap: 8px;
         `}>
           <button
-            onClick={() => setShowResponse(!showResponse)}
+            onClick={() => setIsExpanded(!isExpanded)}
             css={css`
               background: none;
               border: none;
               cursor: pointer;
-              padding: 0;
+              padding: 4px 8px;
               display: flex;
               align-items: center;
-              gap: 6px;
+              gap: 4px;
               font-family: 'Figtree', sans-serif;
-              font-size: 11px;
-              font-weight: 600;
-              color: #78350F;
-              opacity: 0.7;
+              font-size: 13px;
+              font-weight: 500;
+              color: #1957DB;
               transition: opacity 0.2s;
               &:hover {
-                opacity: 1;
+                opacity: 0.8;
               }
             `}
           >
+            View
             <span css={css`
               transition: transform 0.2s;
-              transform: rotate(${showResponse ? '90deg' : '0deg'});
+              transform: rotate(${isExpanded ? '90deg' : '0deg'});
               display: flex;
               align-items: center;
             `}>
               <ChevronIcon />
             </span>
-            Response
           </button>
+        </div>
+      </div>
 
-          {showResponse && (
+      {/* Expandable Content */}
+      {isExpanded && (
+        <div css={css`
+          border-top: 1px solid #E5E7EB;
+          padding-top: 16px;
+          margin-top: 12px;
+        `}>
+          {/* Output Content */}
+          {isOutputTool && output.type === 'text' && (
             <div css={css`
-              margin-top: 8px;
-              border-top: 1px solid #FDE68A;
-              padding-top: 12px;
+              font-family: 'Figtree', sans-serif;
+              font-size: 13px;
+              color: #374151;
+              line-height: 1.6;
+              margin-bottom: 16px;
+              white-space: pre-wrap;
+              word-wrap: break-word;
             `}>
+              {output.content}
+            </div>
+          )}
+
+          {/* Arguments/Inputs Section */}
+          {toolCall.function_arguments && (
+            <div css={css`
+              margin-bottom: 16px;
+            `}>
+              <div css={css`
+                font-family: 'Figtree', sans-serif;
+                font-size: 13px;
+                font-weight: 600;
+                color: #111827;
+                margin-bottom: 12px;
+              `}>
+                Inputs:
+              </div>
               <pre css={css`
                 font-family: 'Monaco', 'Courier New', monospace;
-                font-size: 11px;
-                color: #92400E;
+                font-size: 12px;
+                color: #374151;
+                background-color: #F9FAFB;
+                border: 1px solid #E5E7EB;
+                border-radius: 6px;
+                padding: 12px;
                 white-space: pre-wrap;
                 word-wrap: break-word;
                 margin: 0;
-                opacity: 0.8;
-                max-height: 300px;
+                max-height: 400px;
                 overflow-y: auto;
               `}>
-                {formatOutput()}
+{formatArguments()}
               </pre>
             </div>
           )}
-        </div>
-      )}
 
-      {/* Error message for failed tools */}
-      {!isSuccess && (
-        <div css={css`
-          margin-top: 8px;
-          padding: 12px;
-          background-color: #FEE2E2;
-          border: 1px solid #FCA5A5;
-          border-radius: 6px;
-        `}>
-          <div css={css`
-            font-family: 'Figtree', sans-serif;
-            font-size: 12px;
-            color: #991B1B;
-          `}>
-            ❌ Tool execution failed
-            {toolCall.status && (
-              <span css={css`
-                margin-left: 8px;
-                font-size: 11px;
-                opacity: 0.8;
+          {/* Response/Output Section */}
+          {isOutputTool && (
+            <div css={css`
+              margin-bottom: 16px;
+            `}>
+              <div css={css`
+                font-family: 'Figtree', sans-serif;
+                font-size: 13px;
+                font-weight: 600;
+                color: #111827;
+                margin-bottom: 12px;
               `}>
-                Status: {toolCall.status}
-              </span>
-            )}
-          </div>
+                {output.type === 'json' ? 'JSON Schema of parameters:' : 'Response:'}
+              </div>
+              <pre css={css`
+                font-family: 'Monaco', 'Courier New', monospace;
+                font-size: 12px;
+                color: #374151;
+                background-color: #F9FAFB;
+                border: 1px solid #E5E7EB;
+                border-radius: 6px;
+                padding: 12px;
+                white-space: pre-wrap;
+                word-wrap: break-word;
+                margin: 0;
+                max-height: 600px;
+                overflow-y: auto;
+              `}>
+{output.content}
+              </pre>
+            </div>
+          )}
+
+          {/* Error message for failed tools */}
+          {!isSuccess && (
+            <div css={css`
+              padding: 12px;
+              background-color: #FEE2E2;
+              border: 1px solid #FCA5A5;
+              border-radius: 6px;
+            `}>
+              <div css={css`
+                font-family: 'Figtree', sans-serif;
+                font-size: 13px;
+                color: #991B1B;
+              `}>
+                ❌ Tool execution failed
+                {toolCall.status && (
+                  <span css={css`
+                    margin-left: 8px;
+                    font-size: 12px;
+                    opacity: 0.8;
+                  `}>
+                    Status: {toolCall.status}
+                  </span>
+                )}
+              </div>
+            </div>
+          )}
         </div>
       )}
     </div>

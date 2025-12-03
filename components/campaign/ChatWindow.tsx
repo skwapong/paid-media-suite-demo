@@ -1013,7 +1013,50 @@ const ChatWindow: React.FC<ChatWindowProps> = ({
                       display: flex;
                       flex-direction: column;
                       gap: 8px;
+                      margin-bottom: 12px;
                     `}>
+                      {/* Action Count Header */}
+                      <div css={css`
+                        display: flex;
+                        align-items: center;
+                        gap: 12px;
+                        padding: 12px;
+                        background-color: #F9FAFB;
+                        border: 1px solid #E5E7EB;
+                        border-radius: 8px;
+                        cursor: pointer;
+                        transition: background-color 0.2s;
+                        &:hover {
+                          background-color: #F3F4F6;
+                        }
+                      `}>
+                        <div css={css`
+                          width: 32px;
+                          height: 32px;
+                          border-radius: 4px;
+                          background: linear-gradient(135deg, #6F2EFF 0%, #1957DB 100%);
+                          display: flex;
+                          align-items: center;
+                          justify-content: center;
+                          flex-shrink: 0;
+                        `}>
+                          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                            <path d="M12 2L14 8L20 10L14 12L12 18L10 12L4 10L10 8L12 2Z" fill="white"/>
+                          </svg>
+                        </div>
+                        <span css={css`
+                          font-family: 'Figtree', sans-serif;
+                          font-weight: 600;
+                          font-size: 14px;
+                          color: #111827;
+                          flex: 1;
+                        `}>
+                          {msg.toolCalls.length} action{msg.toolCalls.length !== 1 ? 's' : ''} taken
+                        </span>
+                        <ChevronRightIcon />
+                      </div>
+
+                      {/* Tool Call Items */}
                       {msg.toolCalls.map((toolCall, toolIndex) => (
                         <ToolResponseRenderer
                           key={`tool-${index}-${toolIndex}`}
@@ -2411,6 +2454,12 @@ const AgentIcon = () => (
 const BackArrowIcon = () => (
   <svg width="20" height="20" viewBox="0 0 20 20" fill="none" xmlns="http://www.w3.org/2000/svg">
     <path d="M12 4L6 10L12 16" stroke="#212327" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
+  </svg>
+)
+
+const ChevronRightIcon = () => (
+  <svg width="16" height="16" viewBox="0 0 16 16" fill="none" xmlns="http://www.w3.org/2000/svg">
+    <path d="M6 12L10 8L6 4" stroke="#9CA3AF" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
   </svg>
 )
 
