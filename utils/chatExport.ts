@@ -171,7 +171,6 @@ export const exportAsHTML = (
     .content {
       line-height: 1.6;
       color: #444;
-      white-space: pre-wrap;
     }
     .activities {
       margin-top: 10px;
@@ -214,7 +213,7 @@ export const exportAsHTML = (
         ${roleText}
         ${includeTimestamps ? `<span class="timestamp">${msg.timestamp.toLocaleString()}</span>` : ''}
       </div>
-      <div class="content">${escapeHtml(msg.content)}</div>
+      <div class="content">${markdownToHTML(msg.content)}</div>
 `
 
     if (includeActivities && msg.activities && msg.activities.length > 0) {
@@ -250,6 +249,205 @@ const escapeHtml = (text: string): string => {
   const div = document.createElement('div')
   div.textContent = text
   return div.innerHTML
+}
+
+/**
+ * Convert markdown content to rich HTML with visual styling
+ */
+const markdownToHTML = (content: string): string => {
+  const lines = content.split('\n')
+  let html = ''
+  let inList = false
+  let listType: 'numbered' | 'bullet' | null = null
+  let listItems: string[] = []
+
+  const flushList = () => {
+    if (listItems.length > 0 && listType) {
+      if (listType === 'numbered') {
+        // Numbered list as step cards
+        html += '<div style="margin: 20px 0; display: flex; flex-direction: column; gap: 12px;">'
+        listItems.forEach((item, idx) => {
+          html += `
+            <div style="display: flex; gap: 12px; padding: 16px; background: linear-gradient(135deg, #F0F9FF 0%, #E0F2FE 100%); border-left: 4px solid #1957DB; border-radius: 8px;">
+              <div style="min-width: 28px; height: 28px; border-radius: 50%; background: #1957DB; color: white; display: flex; align-items: center; justify-content: center; font-weight: 700; font-size: 14px; flex-shrink: 0;">
+                ${idx + 1}
+              </div>
+              <div style="flex: 1; line-height: 1.6; color: #0C4A6E;">${item}</div>
+            </div>
+          `
+        })
+        html += '</div>'
+      } else {
+        // Bullet list with checkmarks
+        html += '<div style="margin: 16px 0; display: flex; flex-direction: column; gap: 8px;">'
+        listItems.forEach(item => {
+          html += `
+            <div style="display: flex; gap: 10px; padding: 8px 12px; border-radius: 6px;">
+              <div style="min-width: 20px; height: 20px; margin-top: 2px; border-radius: 50%; background: linear-gradient(135deg, #10B981 0%, #059669 100%); display: flex; align-items: center; justify-content: center; flex-shrink: 0;">
+                <svg width="10" height="10" viewBox="0 0 10 10" fill="none" xmlns="http://www.w3.org/2000/svg">
+                  <path d="M2 5L4 7L8 3" stroke="white" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+                </svg>
+              </div>
+              <div style="flex: 1; line-height: 1.6; color: #374151;">${item}</div>
+            </div>
+          `
+        })
+        html += '</div>'
+      }
+      listItems = []
+      listType = null
+      inList = false
+    }
+  }
+
+  lines.forEach(line => {
+    // Check for numbered list
+    const numberedMatch = line.match(/^(\d+)\.\s+(.+)$/)
+    if (numberedMatch) {
+      if (listType !== 'numbered') {
+        flushList()
+        listType = 'numbered'
+        inList = true
+      }
+      listItems.push(processBold(numberedMatch[2]))
+      return
+    }
+
+    // Check for bullet list
+    const bulletMatch = line.match(/^\s*-\s+(.+)$/)
+    if (bulletMatch) {
+      if (listType !== 'bullet') {
+        flushList()
+        listType = 'bullet'
+        inList = true
+      }
+      listItems.push(processBold(bulletMatch[1]))
+      return
+    }
+
+    // Not a list item, flush any pending list
+    flushList()
+
+    // Check for headings with **
+    const headingWithBoldMatch = line.match(/^##\s*\*\*(.+?)\*\*\s*$/)
+    if (headingWithBoldMatch) {
+      html += `
+        <div style="display: flex; align-items: center; gap: 12px; padding: 14px 16px; background: linear-gradient(135deg, #FEF3C7 0%, #FDE68A 100%); border-left: 4px solid #F59E0B; border-radius: 8px; margin: 20px 0 16px 0;">
+          <div style="min-width: 24px; height: 24px; border-radius: 50%; background: #F59E0B; display: flex; align-items: center; justify-content: center; flex-shrink: 0;">
+            <svg width="12" height="12" viewBox="0 0 12 12" fill="none" xmlns="http://www.w3.org/2000/svg">
+              <path d="M6 2V6L8 8" stroke="white" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+              <circle cx="6" cy="6" r="4.5" stroke="white" stroke-width="1.5"/>
+            </svg>
+          </div>
+          <div style="font-weight: 700; font-size: 15px; color: #92400E;">${headingWithBoldMatch[1]}</div>
+        </div>
+      `
+      return
+    }
+
+    // Check for plain ## heading
+    const headingMatch = line.match(/^##\s+(.+)$/)
+    if (headingMatch) {
+      html += `
+        <div style="display: flex; align-items: center; gap: 12px; padding: 14px 16px; background: linear-gradient(135deg, #FEF3C7 0%, #FDE68A 100%); border-left: 4px solid #F59E0B; border-radius: 8px; margin: 20px 0 16px 0;">
+          <div style="min-width: 24px; height: 24px; border-radius: 50%; background: #F59E0B; display: flex; align-items: center; justify-content: center; flex-shrink: 0;">
+            <svg width="12" height="12" viewBox="0 0 12 12" fill="none" xmlns="http://www.w3.org/2000/svg">
+              <path d="M6 2V6L8 8" stroke="white" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+              <circle cx="6" cy="6" r="4.5" stroke="white" stroke-width="1.5"/>
+            </svg>
+          </div>
+          <div style="font-weight: 700; font-size: 15px; color: #92400E;">${processBold(headingMatch[1])}</div>
+        </div>
+      `
+      return
+    }
+
+    // Check for # heading
+    const hashMatch = line.match(/^#+\s+(.+)$/)
+    if (hashMatch) {
+      html += `
+        <div style="display: flex; align-items: center; gap: 12px; padding: 14px 16px; background: linear-gradient(135deg, #FEF3C7 0%, #FDE68A 100%); border-left: 4px solid #F59E0B; border-radius: 8px; margin: 20px 0 16px 0;">
+          <div style="min-width: 24px; height: 24px; border-radius: 50%; background: #F59E0B; display: flex; align-items: center; justify-content: center; flex-shrink: 0;">
+            <svg width="12" height="12" viewBox="0 0 12 12" fill="none" xmlns="http://www.w3.org/2000/svg">
+              <path d="M6 2V6L8 8" stroke="white" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+              <circle cx="6" cy="6" r="4.5" stroke="white" stroke-width="1.5"/>
+            </svg>
+          </div>
+          <div style="font-weight: 700; font-size: 15px; color: #92400E;">${processBold(hashMatch[1])}</div>
+        </div>
+      `
+      return
+    }
+
+    // Check for callouts (Key Point, Important, etc.)
+    const calloutMatch = line.match(/^\*\*(Key Point|Important|Note|Tip|Warning):\*\*\s*(.+)$/i)
+    if (calloutMatch) {
+      const type = calloutMatch[1].toLowerCase()
+      const calloutContent = calloutMatch[2]
+
+      let bgGradient = 'linear-gradient(135deg, #DBEAFE 0%, #BFDBFE 100%)'
+      let borderColor = '#3B82F6'
+      let iconColor = '#1D4ED8'
+      let textColor = '#1E3A8A'
+      let icon = '💡'
+
+      if (type === 'important' || type === 'warning') {
+        bgGradient = 'linear-gradient(135deg, #FEE2E2 0%, #FECACA 100%)'
+        borderColor = '#EF4444'
+        iconColor = '#B91C1C'
+        textColor = '#7F1D1D'
+        icon = '⚠️'
+      } else if (type === 'tip') {
+        bgGradient = 'linear-gradient(135deg, #D1FAE5 0%, #A7F3D0 100%)'
+        borderColor = '#10B981'
+        iconColor = '#047857'
+        textColor = '#064E3B'
+        icon = '✨'
+      } else if (type === 'note') {
+        bgGradient = 'linear-gradient(135deg, #E0E7FF 0%, #C7D2FE 100%)'
+        borderColor = '#6366F1'
+        iconColor = '#4338CA'
+        textColor = '#312E81'
+        icon = '📌'
+      }
+
+      html += `
+        <div style="display: flex; gap: 12px; padding: 16px; background: ${bgGradient}; border-left: 4px solid ${borderColor}; border-radius: 8px; margin: 16px 0;">
+          <div style="font-size: 20px; line-height: 1; flex-shrink: 0; margin-top: 2px;">${icon}</div>
+          <div style="flex: 1;">
+            <div style="font-weight: 700; font-size: 14px; color: ${iconColor}; margin-bottom: 6px;">${calloutMatch[1]}</div>
+            <div style="font-size: 14px; color: ${textColor}; line-height: 1.6;">${processBold(calloutContent)}</div>
+          </div>
+        </div>
+      `
+      return
+    }
+
+    // Check for separator
+    if (line.trim() === '---') {
+      html += '<hr style="border: none; border-top: 1px solid #E5E7EB; margin: 20px 0;">'
+      return
+    }
+
+    // Regular paragraph
+    if (line.trim()) {
+      html += `<div style="margin-bottom: 12px; color: #374151; line-height: 1.7;">${processBold(line)}</div>`
+    } else {
+      html += '<div style="height: 12px;"></div>'
+    }
+  })
+
+  // Flush any remaining list
+  flushList()
+
+  return html
+}
+
+/**
+ * Process bold text markers
+ */
+const processBold = (text: string): string => {
+  return text.replace(/\*\*(.+?)\*\*/g, '<strong style="font-weight: 700; color: #111827;">$1</strong>')
 }
 
 /**
